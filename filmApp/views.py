@@ -6,6 +6,9 @@ from .models import *
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 
 
 class HelloAPI(APIView):
@@ -187,17 +190,26 @@ class KinoAPI(APIView):
 
 
 class IzohModelViewSet(ModelViewSet):
-    queryset = Izoh.objects.all()
     serializer_class = Izohserializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    queryset = Izoh.objects.all()
     pagination_class = PageNumberPagination
     pagination_class.page_size = 5
+
+    def perform_destroy(self, instance):
+        super().perform_destroy(instance)
 
     def get_queryset(self):
         izohlar = self.queryset
         soz = self.request.query_params.get('tartiblash')
         if soz:
             izohlar = izohlar.order_by('sana')
-        return izohlar
+        return izohlar.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+        return status.HTTP_201_CREATED
 
     # def create(self, request, *args, **kwargs): ---> post
     # def perform_create(self, serializer):

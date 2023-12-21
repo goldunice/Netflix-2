@@ -53,7 +53,7 @@ class KinoPostSerializer(serializers.ModelSerializer):
 class Izohserializer(serializers.ModelSerializer):
     class Meta:
         model = Izoh
-        fields = "__all__"
+        fields = 'id', 'kino', 'matn', 'baho', 'sana'
 
     def to_representation(self, instance):
         izoh = super(Izohserializer, self).to_representation(instance)
